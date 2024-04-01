@@ -1,7 +1,8 @@
 const { Server } = require("socket.io");
 const { v4: uuidv4 } = require('uuid'); // Import uuid
 
-const io = new Server(8000, {
+const port = process.env.PORT || 8000;
+const io = new Server(port, {
   cors: true,
 });
 
