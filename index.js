@@ -31,6 +31,7 @@ io.on("connection", (socket) => {
 
     io.to(socket.id).emit("room:join", { roomName: room.name, type }); // for redirection
     socket.to(room.name).emit("user:joined", { id: socket.id }); // Notify other users in the room
+    io.to(room.name).emit("message", { user: "admin", text: "New User joined!" });
   });
 
 
@@ -94,6 +95,7 @@ io.on("connection", (socket) => {
             text: `Connected User has left the room`,
           });
           delete activeUsers[socket.id];
+          io.to(room.name).emit("user:left");
           // If no users left in the room, remove the room
           if (room.users.length === 0) {
             rooms.splice(i, 1);
