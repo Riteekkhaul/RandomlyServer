@@ -25,7 +25,6 @@ io.on("connection", (socket) => {
     // Join the room
     socket.join(room.name);
     room.users.push(socket.id);
-    console.log(`User ${socket.id} joined room ${room.name}`);
 
     activeUsers[socket.id] = room.name;
 
@@ -63,18 +62,28 @@ io.on("connection", (socket) => {
         break;
       }
     }
-     console.log(newRoom)
+    
     if (newRoom) {
       // Leave the current room
       socket.leave(currentRoom.name);
       currentRoom.users.splice(currentRoom.users.indexOf(socket.id), 1);
       io.to(currentRoom.name).emit('message', { user: 'admin', text: "Connected User has left the room" });
+      delete activeUsers[socket.id];
+
+      // delete the room if no is there 
+      if (room.users.length === 0) {
+        rooms.splice(rooms.indexOf(currentRoom), 1);
+      }
 
       // Join the new room
       socket.join(newRoom.name);
       newRoom.users.push(socket.id);
-      socket.to(room.name).emit("user:joined", { id: socket.id }); // Notify other users in the room
-      console.log(`User ${socket.id} joined room ${newRoom.name}`);
+
+      activeUsers[socket.id] = newRoom.name;
+
+      io.to(socket.id).emit("room:skip:join", { roomName: newRoom.name}); // for redirection
+      socket.to(newRoom.name).emit("user:joined", { id: socket.id }); // Notify other users in the room
+      io.to(room.name).emit("message", { user: "admin", text: "New User joined!" });
     }
   });
 
